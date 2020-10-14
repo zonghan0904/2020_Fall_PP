@@ -1,9 +1,13 @@
 #include <iostream>
+#include <fstream>
 #include "test.h"
 #include "fasttime.h"
 
-void test1(float* a, float* b, float* c, int N) {
+void test1(float* __restrict a, float* __restrict b, float* __restrict c, int N) {
   __builtin_assume(N == 1024);
+  a = (float *)__builtin_assume_aligned(a, 32);		// 32bytes aligned for AVX2
+  b = (float *)__builtin_assume_aligned(b, 32);		// 32bytes aligned for AVX2
+  c = (float *)__builtin_assume_aligned(c, 32);		// 32bytes aligned for AVX2
 
   fasttime_t time1 = gettime();
   for (int i=0; i<I; i++) {
@@ -16,4 +20,7 @@ void test1(float* a, float* b, float* c, int N) {
   double elapsedf = tdiff(time1, time2);
   std::cout << "Elapsed execution time of the loop in test1():\n" 
     << elapsedf << "sec (N: " << N << ", I: " << I << ")\n";
+
+  std::fstream fout("EXP/test1_exp/case3.txt", std::fstream::out | std::fstream::app);
+  fout << elapsedf << std::endl;
 }
