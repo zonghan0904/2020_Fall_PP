@@ -61,8 +61,6 @@ void clampedExpVector(float *values, int *exponents, float *output, int N)
   __pp_mask maskAll, maskIsEqual, maskIsNotEqual;
   __pp_mask maskIsPositive;
   __pp_mask maskIsLarge;
-  __pp_mask maskNEAndP;
-  __pp_mask maskNEAndL;
 
   int mod = N % VECTOR_WIDTH;
 
@@ -107,22 +105,22 @@ void clampedExpVector(float *values, int *exponents, float *output, int N)
     // Execute instruction ("else" clause)
     _pp_vmove_float(result, x, maskIsNotEqual); //     result = x;
     _pp_vsub_int(count, y, one, maskIsNotEqual);//     count = y - 1;}
+    maskIsPositive = _pp_init_ones(0);
     _pp_vgt_int(maskIsPositive, count, zero, maskIsNotEqual);
 
     // Loop instruction("While" loop)
     while (_pp_cntbits(maskIsPositive)){
-	maskNEAndP = _pp_mask_and(maskIsNotEqual, maskIsPositive);
-	_pp_vmult_float(result, result, x, maskNEAndP);	// result *= x;
-	_pp_vsub_int(count, count, one, maskNEAndP);	// count--;
-	_pp_vgt_int(maskIsPositive, count, zero, maskNEAndP);
+	_pp_vmult_float(result, result, x, maskIsPositive);	// result *= x;
+	_pp_vsub_int(count, count, one, maskIsPositive);	// count--;
+	_pp_vgt_int(maskIsPositive, count, zero, maskIsPositive);
     }
 
     // Set mask according to predicate
+    maskIsLarge = _pp_init_ones(0);
     _pp_vgt_float(maskIsLarge, result, max, maskIsNotEqual); // if (result > 9.999999f) {
 
     // Execute instruction using mask ("if" clause)
-    maskNEAndL = _pp_mask_and(maskIsNotEqual, maskIsLarge);
-    _pp_vset_float(result, 9.999999f, maskNEAndL);   //   output[i] = 9.999999f;
+    _pp_vset_float(result, 9.999999f, maskIsLarge);   //   output[i] = 9.999999f;
 
     // Write results back to memory
     _pp_vstore_float(output + i, result, maskAll);
