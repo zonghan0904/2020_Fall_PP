@@ -35,14 +35,15 @@ void workerThreadStart(WorkerArgs *const args)
     // program that uses two threads, thread 0 could compute the top
     // half of the image and thread 1 could compute the bottom half.
 
-    int startRow = args->threadId * args->height / args->numThreads;
-    int endRow = (args->threadId + 1) * args->height / args->numThreads;
+    int numRows = args->height / args->numThreads;
+    int mod = args->height % args->numThreads;
+    int startRow = args->threadId * numRows;
 
-    if (args->threadId == (args->numThreads - 1)) endRow += args->height % args->numThreads;
+    if (args->threadId == (args->numThreads - 1)) numRows += mod;
 
     mandelbrotSerial(args->x0, args->y0, args->x1, args->y1,
 		     args->width, args->height,
-		     startRow, (endRow - startRow),
+		     startRow, numRows,
 		     args->maxIterations,
 		     args->output);
 
