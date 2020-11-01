@@ -42,12 +42,12 @@ void workerThreadStart(WorkerArgs *const args)
     if (args->threadId == (args->numThreads - 1)) numRows += mod;
 
     mandelbrotSerial(args->x0, args->y0, args->x1, args->y1,
-		     args->width, args->height,
-		     startRow, numRows,
-		     args->maxIterations,
-		     args->output);
+ 		     args->width, args->height,
+ 		     startRow, numRows,
+ 		     args->maxIterations,
+ 		     args->output);
 
-    printf("Hello world from thread %d\n", args->threadId);
+    // printf("Hello world from thread %d\n", args->threadId);
 }
 
 //
@@ -70,25 +70,31 @@ void mandelbrotThread(
     }
 
     // Creates thread objects that do not yet represent a thread.
+    int padding = 16;
     std::thread workers[MAX_THREADS];
-    WorkerArgs args[MAX_THREADS];
+    WorkerArgs args[MAX_THREADS][padding];
+
+    // create padding output.
+    // int padding = 16;
+    // int Workload = height / numThreads;
+    // int *padding_output = new int[padding * numThreads * width * height];
 
     for (int i = 0; i < numThreads; i++)
     {
         // TODO FOR PP STUDENTS: You may or may not wish to modify
         // the per-thread arguments here.  The code below copies the
         // same arguments for each thread
-        args[i].x0 = x0;
-        args[i].y0 = y0;
-        args[i].x1 = x1;
-        args[i].y1 = y1;
-        args[i].width = width;
-        args[i].height = height;
-        args[i].maxIterations = maxIterations;
-        args[i].numThreads = numThreads;
-        args[i].output = output;
+        args[i][0].x0 = x0;
+        args[i][0].y0 = y0;
+        args[i][0].x1 = x1;
+        args[i][0].y1 = y1;
+        args[i][0].width = width;
+        args[i][0].height = height;
+        args[i][0].maxIterations = maxIterations;
+        args[i][0].numThreads = numThreads;
+        args[i][0].output = output;
 
-        args[i].threadId = i;
+        args[i][0].threadId = i;
     }
 
     // Spawn the worker threads.  Note that only numThreads-1 std::threads
@@ -96,14 +102,30 @@ void mandelbrotThread(
     // as well.
     for (int i = 1; i < numThreads; i++)
     {
-        workers[i] = std::thread(workerThreadStart, &args[i]);
+        workers[i] = std::thread(workerThreadStart, &args[i][0]);
     }
 
-    workerThreadStart(&args[0]);
+    workerThreadStart(&args[0][0]);
 
     // join worker threads
     for (int i = 1; i < numThreads; i++)
     {
         workers[i].join();
     }
+
+    // copy the answer from padding output to output data.
+    // for (int k = 0; k < numThreads; k++){
+    //     int startRow = k * Workload;
+    //     int endRow = startRow + Workload;
+    //     if (k == numThreads - 1) endRow += height % numThreads;
+
+    //     for (int j = startRow; j < endRow; j++){
+    //         for (int i = 0; i < width; i++){
+    //     	output[j * width + i] = padding_output[padding * k + j * width + i];
+    //         }
+    //     }
+    // }
+
+    // delete the padding output.
+    // delete [] padding_output;
 }

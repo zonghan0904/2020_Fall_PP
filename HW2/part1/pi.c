@@ -3,19 +3,19 @@
 # include <time.h>
 # include <pthread.h>
 
-long long int num_cycle = 0;
+volatile long long int num_cycle = 0;
 pthread_mutex_t lock;
 
 void* estimate(void* param){
     long long int tasks = *(int*)param;
     long long int cycles = 0;
-    unsigned int seed = time(NULL);
+    unsigned int seed = 104;
 
     double x, y, f1, f2, distance;
     for (int i = 0; i < tasks; i++){
-	f1 = (double)rand_r(&seed) / RAND_MAX;
+	f1 = rand_r(&seed) / (double)RAND_MAX;
 	x = -1 + f1 * 2;
-	f2 = (double)rand_r(&seed) / RAND_MAX;
+	f2 = rand_r(&seed) / (double)RAND_MAX;
 	y = -1 + f2 * 2;
 	distance = x * x + y * y;
 	if (distance <= 1){
@@ -57,8 +57,9 @@ int main(int argc, char** argv){
     }
 
     free(threads);
+    pthread_mutex_destroy(&lock);
     double pi = 4 * num_cycle / ((double) num_toss);
-    printf("%f\n", pi);
+    printf("%lf\n", pi);
 
     return 0;
 }
