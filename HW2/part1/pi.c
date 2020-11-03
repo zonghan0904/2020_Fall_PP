@@ -2,6 +2,9 @@
 # include <stdlib.h>
 # include <time.h>
 # include <pthread.h>
+# include <immintrin.h>
+
+# include "simdxorshift128plus.h"
 
 volatile long long int num_cycle = 0;
 pthread_mutex_t lock;
@@ -9,17 +12,28 @@ pthread_mutex_t lock;
 void* estimate(void* param){
     long long int tasks = *(int*)param;
     long long int cycles = 0;
-    unsigned int seed = 104;
+    avx_xorshift128plus_key_t mykey;
+    avx_xorshift128plus_init(324, 4444, &mykey);
+    __m256 full = _mm256_set_ps(INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX);
 
-    double x, y, f1, f2, distance;
-    for (int i = 0; i < tasks; i++){
-	f1 = rand_r(&seed) / (double)RAND_MAX;
-	x = -1 + f1 * 2;
-	f2 = rand_r(&seed) / (double)RAND_MAX;
-	y = -1 + f2 * 2;
-	distance = x * x + y * y;
-	if (distance <= 1){
-	    ++cycles;
+    for (int i = 0; i < tasks; i+=8){
+	__m256i x_i = avx_xorshift128plus(&mykey);
+	__m256 x_f = _mm256_cvtepi32_ps(x_i);
+	__m256 x = _mm256_div_ps(x_f, full);
+
+	__m256i y_i = avx_xorshift128plus(&mykey);
+	__m256 y_f = _mm256_cvtepi32_ps(y_i);
+	__m256 y = _mm256_div_ps(y_f, full);
+
+	__m256 x_2 = _mm256_mul_ps(x, x);
+	__m256 y_2 = _mm256_mul_ps(y, y);
+	__m256 sum = _mm256_add_ps(x_2, y_2);
+
+	float val[8];
+	_mm256_store_ps(val, sum);
+
+	for (int i = 0; i < 8; i++){
+	    if (val[i] <= 1.f) ++cycles;
 	}
     }
 
@@ -58,7 +72,7 @@ int main(int argc, char** argv){
 
     free(threads);
     pthread_mutex_destroy(&lock);
-    double pi = 4 * num_cycle / ((double) num_toss);
+    float pi = 4 * num_cycle / ((float) num_toss);
     printf("%lf\n", pi);
 
     return 0;
