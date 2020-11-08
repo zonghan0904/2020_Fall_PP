@@ -3,3 +3,5 @@
 *.data
 *.ppm
 mandelbrot
+cg
+cg_grader
