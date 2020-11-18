@@ -11,6 +11,7 @@
 
 #define ROOT_NODE_ID 0
 #define NOT_VISITED_MARKER -1
+#define THRESHOLD 10000000
 
 void vertex_set_clear(vertex_set *list)
 {
@@ -216,6 +217,42 @@ void bfs_hybrid(Graph graph, solution *sol)
     //
     // You will need to implement the "hybrid" BFS here as
     // described in the handout.
+    vertex_set list1;
+    vertex_set_init(&list1, graph->num_nodes);
+    int iteration = 0;
+    vertex_set *frontier = &list1;
 
+    memset(frontier->vertices, NOT_VISITED_MARKER, sizeof(int) * graph->num_nodes);
+    frontier->vertices[ROOT_NODE_ID] = iteration;
+    frontier->count++;
+
+    // initialize all nodes to NOT_VISITED
+    for (int i = 0; i < graph->num_nodes; i++)
+        sol->distances[i] = NOT_VISITED_MARKER;
+
+    sol->distances[ROOT_NODE_ID] = 0;
+
+    while (frontier->count != 0){
+#ifdef VERBOSE
+        double start_time = CycleTimer::currentSeconds();
+#endif
+
+	if (frontier->count > THRESHOLD){
+	    frontier->count = 0;
+	    bottom_up_step(graph, frontier, sol->distances, iteration);
+	}
+	else{
+	    frontier->count = 0;
+	    top_down_step(graph, frontier, sol->distances, iteration);
+	}
+
+#ifdef VERBOSE
+        double end_time = CycleTimer::currentSeconds();
+        printf("frontier=%-10d %.4f sec\n", frontier->count, end_time - start_time);
+#endif
+
+	iteration++;
+
+    }
 
 }
