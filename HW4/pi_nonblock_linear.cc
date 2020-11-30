@@ -23,12 +23,12 @@ int main(int argc, char **argv)
     int tag = 0;
     long long int count = 0;
 
-    int seed = world_rank * SEED, dest = 0;
+    unsigned int seed = world_rank * SEED, dest = 0;
     long long int local_cnt = 0;
     srand(seed);
     for (long long int toss = 0; toss < num_task; toss++){
-        double x = (double) rand() / RAND_MAX;
-        double y = (double) rand() / RAND_MAX;
+        double x = (double) rand_r(&seed) / RAND_MAX;
+        double y = (double) rand_r(&seed) / RAND_MAX;
         double distance = x * x + y * y;
         if (distance <= 1){
 	   local_cnt++;
