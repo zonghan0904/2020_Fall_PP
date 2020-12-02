@@ -38,18 +38,34 @@ int main(int argc, char **argv)
 
     // TODO: binary tree redunction
     int base = 1;
-    while (base <= world_size){
+    while (base < world_size){
 	MPI_Barrier(MPI_COMM_WORLD);
-	if (world_rank % base == 0 && world_rank % 2 == 0){
-	    int source = world_rank + 1;
-	    long long int buf;
-	    MPI_Recv(&buf, 1, MPI_UNSIGNED_LONG, source, tag, MPI_COMM_WORLD, &status);
-	    local_cnt += buf;
-	    // printf("base: %d\tprocess: %d\tlocal_cnt: %ld\n", base, world_rank, local_cnt);
+	if (base == 1){
+	    if (world_rank % 2 == 0){
+		int source = world_rank + 1;
+	    	long long int buf;
+	    	MPI_Recv(&buf, 1, MPI_UNSIGNED_LONG, source, tag, MPI_COMM_WORLD, &status);
+	    	local_cnt += buf;
+	    }
+	    else{
+		int dest = world_rank - 1;
+		MPI_Send(&local_cnt, 1, MPI_UNSIGNED_LONG, dest, tag, MPI_COMM_WORLD);
+	    }
 	}
 	else{
-	    int dest = world_rank - 1;
-	    MPI_Send(&local_cnt, 1, MPI_UNSIGNED_LONG, dest, tag, MPI_COMM_WORLD);
+	    int mod = world_rank % base;
+	    int div = world_rank / base;
+
+	    if (mod == 0 && div % 2 == 0){
+		int source = world_rank + base;
+	    	long long int buf;
+	    	MPI_Recv(&buf, 1, MPI_UNSIGNED_LONG, source, tag, MPI_COMM_WORLD, &status);
+	    	local_cnt += buf;
+	    }
+	    if (mod == 0 && div % 2 != 0){
+		int dest = world_rank - base;
+		MPI_Send(&local_cnt, 1, MPI_UNSIGNED_LONG, dest, tag, MPI_COMM_WORLD);
+	    }
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
 	base *= 2;
