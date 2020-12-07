@@ -108,7 +108,8 @@ void matrix_multiply(const int n, const int m, const int l,
         /* Print results */
         for (i = 0; i < n; i++){
             for (j = 0; j < l; j++){
-        	printf("%d ", c[i * l + j]);
+        	printf("%d", c[i * l + j]);
+		if (j != l-1) printf(" ");
             }
             printf("\n");
         }
