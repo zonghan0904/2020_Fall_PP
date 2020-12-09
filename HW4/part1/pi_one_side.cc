@@ -7,16 +7,18 @@
 
 int fnz (long long int *schedule, long long int *oldschedule, int size)
 {
-    int diff = 0;
+    int res = 0;
 
     for (int i = 1; i < size; i++){
-	if (schedule[i] != oldschedule[i]){
-	    diff += 1;
+	if (schedule[i] == 0){
+	    res++;
 	}
-	oldschedule[i] = schedule[i];
+	else if (schedule[i] != oldschedule[i]){
+	    oldschedule[i] = schedule[i];
+	}
     }
 
-    return (diff == 0);
+    return (res == 0);
 }
 
 int main(int argc, char **argv)
@@ -83,6 +85,7 @@ int main(int argc, char **argv)
 	count = local_cnt;
 	for (int i = 1; i < world_size; i++){
 	    count += schedule[i];
+	    // printf("schedule[%d]: %lld\n", i, schedule[i]);
 	}
 
         // Release the window
