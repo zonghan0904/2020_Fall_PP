@@ -9,3 +9,6 @@ pr
 pr_grader
 bfs
 bfs_grader
+conv
+output.bmp
+ref.bmp
