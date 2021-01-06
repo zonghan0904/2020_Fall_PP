@@ -1,4 +1,4 @@
-__kernel void convolution(int filterWidth, __global float * filter,
+__kernel void convolution(int filterWidth, __constant float * filter,
 			  int imageHeight, int imageWidth,
 			  __global float * inputImage, __global float * outputImage)
 {
