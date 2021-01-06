@@ -12,3 +12,8 @@ bfs_grader
 conv
 output.bmp
 ref.bmp
+serial
+pthreads
+omp
+cuda
+opencl
