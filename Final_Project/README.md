@@ -16,14 +16,18 @@ Use clean if you want to clean build.
 
 ## Example
 ### For serial implementation
-```$ cd Serial```
-```$ make```
-```$ ./serial```
+```
+$ cd Serial
+$ make
+$ ./serial
+```
 
 ### For CUDA implementation
-```$ cd CUDA```
-```$ make```
-```$ ./cuda```
+```
+$ cd CUDA
+$ make
+$ ./cuda
+```
 
 ## Result
 It should output the average execution time of corresponding implementation.
